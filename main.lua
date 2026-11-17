@@ -25,11 +25,11 @@ levels = {
         },
     },
     flowerField = {
-        map = 'maps/flowerField.lua',
+        map = 'maps/bigRed.lua', --temp name for now
         spawn = {x = 65, y = 940},
-        npc = (name = "Mimic", x = 905, y = 915, knot = "MimicDialogue"),
+        npc = {name = "Mimic", x = 905, y = 915, knot = "MimicDialogue"},
         exits = {},
-    }
+    },
 }
 
 function loadLevel(name)
