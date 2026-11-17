@@ -1,3 +1,50 @@
+levels = {
+    forestEntrance = {
+        map = 'maps/forestEntrance.lua',
+        spawn = {x = 400, y = 200},
+        npc = {name = "Best Friend", x = 500, y = 200, knot = "opening"},
+        exits = {
+            {x = 1850, y = 935, w = 300, h = 300, to = "witchHouse"},
+        },
+    },
+    witchHouse = {
+        map = 'maps/witchHouse.lua',
+        spawn = {x = 65, y = 940},
+        npc = {name = "Witch", x = 905, y = 915, knot = "WitchDialogue"},
+        exits = {x = 1865, y = 940, w = 300, h = 300, to "bigRed"}
+    },
+    bigRed = {
+        map = 'maps/bigRed.lua',
+        spawn = {x = 65, y = 940},
+        npc = {name = "BigRed", x = 905, y = 915, knot = "BigRedDialogue"},
+        exits = {}
+    }
+}
+
+function loadLevel(name)
+    local lvl = levels[name]
+    currentLevel = lvl
+    gameMap = sti(lvl.map)
+
+    player.x, player.y = lvl.spawn.x, lvl.spawn.y
+
+    narrator._boundNPCs = {}  -- forget the previous level's NPCs
+    myNPC = NPC.new('sprites/player-sheet.png', lvl.npc.x, lvl.npc.y, 0, 0)
+    local char = narrator:newCharacter(lvl.npc.name, nil)
+    narrator:bindNPC(myNPC, char, lvl.npc.knot)
+end
+
+gameState = "playing"
+
+function triggerGameOver()
+    gameState = "gameover"
+end
+
+function restartGame()
+    gameState = "playing"
+    loadLevel("forestEntrance")
+end
+
 function love.load()
     camera = require 'libraries/camera'
     NPC = require 'libraries/npc'
@@ -10,11 +57,7 @@ function love.load()
 
     love.graphics.setDefaultFilter("nearest", "nearest")
 
-    gameMap = sti('maps/forestEntrance.lua')
-
     player = {}
-    player.x = 400
-    player.y = 200
     player.speed = 5
     player.spriteSheet = love.graphics.newImage('sprites/player-sheet.png')
     player.grid = anim8.newGrid( 12, 18, player.spriteSheet:getWidth(), player.spriteSheet:getHeight() )
@@ -27,23 +70,14 @@ function love.load()
 
     player.anim = player.animations.left
 
-    -- character sheet, starting position, wander x, wander y
-    myNPC = NPC.new('sprites/player-sheet.png', player.x + 100, player.y, 0, 0)
-
-    -- Narrator: ink + talkies wrapper. See narrator.lua.
     narrator:init()
 
-   characterFriend = narrator:newCharacter("Best Friend", nil)
-   narrator:bindNPC(myNPC, characterFriend, "opening")
-
-    -- Distance (in world pixels) at which the "E" prompt appears.
     interactRange = 200
-
-    -- Set when the player is close enough to a bound NPC to interact.
     nearbyNPC = nil
-
-    -- Font for the floating "E" key prompt.
     promptFont = love.graphics.newFont(14)
+
+    -- must come after player and narrator:init() exist
+    loadLevel("forestEntrance")
 end
 
 -- Check if a world position collides with a tile on the Trees layer
@@ -51,7 +85,8 @@ function treeAt(x, y)
     local layer = gameMap.layers["Trees"]
     local tx = math.floor(x / gameMap.tilewidth) + 1
     local ty = math.floor(y / gameMap.tileheight) + 1
-    return layer.data[ty] and layer.data[ty][tx]
+    local t = layer.data[ty] and layer.data[ty][tx]
+    return t and t.gid ~= 14 and t.gid ~= nil
 end
 
 -- Find the closest bound NPC within interactRange (or nil).
@@ -69,6 +104,7 @@ function findNearbyNPC()
 end
 
 function love.update(dt)
+    if gameState == "gameover" then return end
     local dialogueOpen = narrator:isOpen()
 
     -- Freeze the player while a dialog is on screen so the conversation feels
@@ -102,8 +138,17 @@ function love.update(dt)
         end
 
         -- Collision: check each axis separately so player slides along walls
-        --if treeAt(player.x, oldY) then player.x = oldX end
-        --if treeAt(player.x, player.y) then player.y = oldY end
+        if treeAt(player.x, oldY + 50) then player.x = oldX end
+        if treeAt(player.x, player.y + 50) then player.y = oldY end
+
+        -- Level exits: walk into an exit box to load the next level
+        for _, e in ipairs(currentLevel.exits) do
+            if player.x > e.x and player.x < e.x + e.w
+               and player.y > e.y and player.y < e.y + e.h then
+                loadLevel(e.to)
+                break
+            end
+        end
 
         if isMoving == false then
             player.anim:gotoFrame(2)
@@ -119,18 +164,15 @@ function love.update(dt)
     cam:lookAt(player.x, player.y)
 
     -- This section prevents the camera from viewing outside the background
-    -- First, get width/height of the game window
     local w, h = love.graphics.getDimensions()
 
-    -- Get the size of the map in pixels
     local mapW = gameMap.width * gameMap.tilewidth
     local mapH = gameMap.height * gameMap.tileheight
 
-    -- Keep the camera inside the map
     local zoom = 0.5
     local halfW = w / (2 * zoom)
     local halfH = h / (2 * zoom)
-    
+
     cam.x = math.max(halfW, math.min(cam.x, mapW - halfW))
     cam.y = math.max(halfH, math.min(cam.y, mapH - halfH))
     myNPC:update(dt)
@@ -156,26 +198,46 @@ function drawInteractPrompt(npc)
 end
 
 function love.draw()
-   cam:attach()
-    gameMap:drawLayer(gameMap.layers["Ground"])
-    gameMap:drawLayer(gameMap.layers["Trees"])
-    player.anim:draw(player.spriteSheet, player.x, player.y, nil, 6, nil, 6, 9)
-    myNPC:draw()
+    cam:attach()
+     gameMap:drawLayer(gameMap.layers["Ground"])
+     gameMap:drawLayer(gameMap.layers["Trees"])
+     player.anim:draw(player.spriteSheet, player.x, player.y, nil, 6, nil, 6, 9)
+     myNPC:draw()
+ 
+         if nearbyNPC then
+             drawInteractPrompt(nearbyNPC)
+         end
+     cam:detach()
+ 
+     love.graphics.print("x = " .. math.floor(player.x) .. " y = " .. math.floor(player.y), 10, 10)
+ 
+     local tx = math.floor(player.x / gameMap.tilewidth) + 1
+     local ty = math.floor((player.y + 50) / gameMap.tileheight) + 1
+     local row = gameMap.layers["Trees"].data[ty]
+     local t = row and row[tx]
+     love.graphics.print("tile " .. tx .. "," .. ty .. " gid " .. tostring(t and t.gid), 10, 30)
+ 
+     -- Dialogue UI is drawn last so it sits on top of everything.
+     narrator:draw()
 
-        if nearbyNPC then
-            drawInteractPrompt(nearbyNPC)
-        end
-    cam:detach()
-
-    love.graphics.print("x = " .. math.floor(player.x) .. " y = " .. math.floor(player.y), 10, 10)
-
-    -- Dialogue UI is drawn last so it sits on top of everything.
-    narrator:draw()
-end
+     if gameState == "gameover" then
+        local w, h = love.graphics.getDimensions()
+        love.graphics.setColor(0, 0, 0, 0.85)
+        love.graphics.rectangle("fill", 0, 0, w, h)
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.printf("GAME OVER", 0, h / 2 - 60, w / 3, "center", 0, 3, 3)
+        love.graphics.printf("Press R to restart", 0, h / 2 + 20, w / 2, "center", 0, 2, 2)
+    end
+ end
 
 function love.keypressed(key)
     if key == "escape" then
         love.event.quit()
+    end
+
+    if gameState == "gameover" then
+        if key == "r" then restartGame() end
+        return
     end
 
     if narrator:isOpen() then

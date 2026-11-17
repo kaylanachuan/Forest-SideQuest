@@ -137,6 +137,11 @@ function narrator:_pump(state)
         local batch = story:continue()
         for _, paragraph in ipairs(batch) do
             local text = paragraph.text or ""
+            if text:find("@@GAMEOVER@@", 1, true) then
+                state.gameOver = true
+                text = (text:gsub("@@GAMEOVER@@", ""))
+                text = (text:gsub("%s+$", ""))
+            end
             if text ~= "" then
                 table.insert(lines, text)
             end
@@ -173,6 +178,7 @@ function narrator:_pump(state)
         -- Mark the speaker free again once the dialog box closes.
         config.oncomplete = function()
             if state.npc then state.npc.isTalking = false end
+            if state.gameOver then triggerGameOver() end
         end
 
         if #lines == 0 then

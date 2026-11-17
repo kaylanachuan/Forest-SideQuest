@@ -17,7 +17,7 @@ BigRed: "What can you hold but can't touch?"
     You: "A promise."
     BigRed: "CORRECT! Good job, take the left bridge, and here's an item back since you got it correct."
     ~ items = items + 1
-    -> mimic
+    -> END
 * [A flower]
     You: "A flower."
     -> riddle_wrong

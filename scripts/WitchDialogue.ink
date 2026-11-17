@@ -1,5 +1,7 @@
+-> witch_house
+
 === witch_house ===
-*knock on door*
+You: *knock on door*
 
 You: "Hi, I'm looking for my friend. Have you seen a young girl walking around here?"
 
@@ -10,7 +12,7 @@ Witch: "Hello dear, I haven't but I might have something that can help you. Why 
     Witch: "I have this magic mirror that always helps me find whatever I need. Here you go, and I hope you find your friend!"
     You: "It says my friend is somewhere in a flower field. Thank you for your help!"
     Witch: "Of course! I hope you find your friend!"
-    -> big_red
+    -> END
 
 * [Don't go inside her house]
     You: "NO! I know you are trying to kidnap me and I will NOT go inside your house!"
@@ -20,4 +22,5 @@ Witch: "Hello dear, I haven't but I might have something that can help you. Why 
 
 === witch_lose ===
 You drink the soup and instantly fall into a coma and lose the game.
+@@GAMEOVER@@
 -> END
