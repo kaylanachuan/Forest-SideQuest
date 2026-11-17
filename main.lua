@@ -11,13 +11,24 @@ levels = {
         map = 'maps/witchHouse.lua',
         spawn = {x = 65, y = 940},
         npc = {name = "Witch", x = 905, y = 915, knot = "WitchDialogue"},
-        exits = {x = 1865, y = 940, w = 300, h = 300, to "bigRed"}
+        exits = {
+            {x = 1880, y = 950, w = 500, h = 500, to = "bigRed"}
+            },
     },
     bigRed = {
         map = 'maps/bigRed.lua',
         spawn = {x = 65, y = 940},
-        npc = {name = "BigRed", x = 905, y = 915, knot = "BigRedDialogue"},
-        exits = {}
+        npc = {name = "BigRed", x = 1250, y = 920, knot = "BigRedDialogue"},
+        exits = {
+            {x = 1845, y = 1120, w = 500, h = 500, gameover = true},
+            {x = 1855, y = 660, w = 500, h = 500, to = "flowerField"},
+        },
+    },
+    flowerField = {
+        map = 'maps/flowerField.lua',
+        spawn = {x = 65, y = 940},
+        npc = (name = "Mimic", x = 905, y = 915, knot = "MimicDialogue"),
+        exits = {},
     }
 }
 

@@ -1,3 +1,6 @@
+VAR items = 3
+-> big_red
+
 === big_red ===
 You: "Hi, do you know which bridge will lead me to the flower field?"
 
@@ -24,6 +27,11 @@ BigRed: "What can you hold but can't touch?"
 
 === riddle_wrong ===
 BigRed: "WRONG! This riddle is so easy, I'm taking an item from you as punishment."
-~ items = MAX(items - 1, 0)
+~ items = items - 1
+{ items <= 0:
+    You have nothing left. Your bravery crumbles and you collapse from anxiety.
+    @@GAMEOVER@@
+        -> END
+}
 // Wrong answers loop back so you can try again
 -> riddle
