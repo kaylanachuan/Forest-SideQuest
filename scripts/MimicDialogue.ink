@@ -1,3 +1,5 @@
+--> mimic 
+
 === mimic ===
 You: "Best Friend! Is that you??"
 
@@ -17,4 +19,5 @@ Mimic: "OMG! Hiii!! Come over here and help me pick flowers! They're so pretty!"
 
 === mimic_lose ===
 You help pick the flowers and realize they're poisonous, get lightheaded, and fall to the ground.
+@@GAMEOVER@@
 -> END

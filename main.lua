@@ -25,9 +25,9 @@ levels = {
         },
     },
     flowerField = {
-        map = 'maps/bigRed.lua', --temp name for now
+        map = 'maps/flowerField.lua',
         spawn = {x = 65, y = 940},
-        npc = {name = "Mimic", x = 905, y = 915, knot = "MimicDialogue"},
+        npc = {name = "Mimic", x = 1180, y = 915, knot = "MimicDialogue"},
         exits = {},
     },
 }
